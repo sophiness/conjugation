@@ -9,7 +9,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import decompose_str, compose_str, get_final_consonant, decompose, is_hangul
+from utils import decompose_str, compose_str, get_final_consonant, decompose, is_hangul, is_consonant_jamo
 from rules.vowel_harmony import apply_vowel_harmony
 from rules.contraction import apply_regular_contraction, should_contract
 
@@ -47,19 +47,26 @@ def apply_regular_conjugation(stem, ending):
     if not ending:
         return stem
 
-    # Check if ending starts with incomplete consonant (자소)
-    # Incomplete consonant endings: ㄴ, ㅂ, ㅅ, etc.
-    if len(ending) == 1 and ending in ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']:
-        # Incomplete consonant ending
+    # Check if ending starts with consonant jamo (자소)
+    # This includes both single consonant and multi-syllable endings starting with consonant jamo
+    # Examples: ㄴ, ㅂ, ㅂ니다, ㄹ까요, etc.
+    first_char = ending[0] if ending else ''
+
+    if is_consonant_jamo(first_char):
+        # Consonant jamo initial ending
         jamo_stem = decompose_str(stem)
+
+        # Get rest of ending (everything after first consonant jamo)
+        rest_ending = ending[1:] if len(ending) > 1 else ''
+
         if get_final_consonant(stem):
             # Has jongsung: need epenthetic ㅡ
-            # Example: 먹 + ㄴ → 먹은 (ㅁㅓㄱ + ㅇㅡㄴ)
-            result = compose_str(jamo_stem + 'ㅇㅡ' + ending)
+            # Example: 먹 + ㄴ → 먹은, 먹 + ㅂ니다 → 먹습니다
+            result = compose_str(jamo_stem + 'ㅇㅡ' + first_char) + rest_ending
         else:
             # No jongsung: consonant becomes jongsung
-            # Example: 가 + ㄴ → 간 (ㄱㅏ + ㄴ)
-            result = compose_str(jamo_stem + ending)
+            # Example: 가 + ㄴ → 간, 가 + ㅂ니다 → 갑니다
+            result = compose_str(jamo_stem + first_char) + rest_ending
         return result
 
     # Check if ending is vowel-initial or consonant-initial

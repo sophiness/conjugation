@@ -40,7 +40,7 @@ cd conjugation
 
 ## 사용법
 
-### 기본 사용
+### 기본 사용 (어간 + 어미)
 
 ```python
 from conjugator import conjugate
@@ -67,7 +67,27 @@ result = conjugate('흐르', '어')  # 흘러 (르불규칙)
 
 # 이다 활용
 result = conjugate('이', '었다', prev_word='나무')  # 였다
+
+# 자음 자모로 시작하는 어미 (모아쓰기 자동 처리)
+result = conjugate('가', 'ㅂ니다')  # 갑니다
+result = conjugate('먹', 'ㅂ니다')  # 먹습니다
+result = conjugate('가', 'ㄹ까요')  # 갈까요
 ```
+
+### 문장 복원 (Kiwi 형태소 분석기 통합)
+
+```python
+from sentence_reconstructor import reconstruct_sentence
+
+# 완전한 문장 입력 → 형태소 분석 → 활용 규칙 적용 → 복원
+result = reconstruct_sentence("나는 밥을 먹었어요")
+print(result)  # 나는밥을먹었어요 (띄어쓰기 없음)
+
+result = reconstruct_sentence("그는 학교에 갑니다")
+print(result)  # 그는학교에갑니다
+```
+
+**참고**: Kiwi 설치 필요 (`pip install kiwipiepy`), 설치 안 되어 있으면 mock 데이터 사용
 
 ### 예제 실행
 
@@ -84,9 +104,10 @@ python tests/test_conjugation.py
 ```
 conjugation/
 ├── README.md                    # 프로젝트 문서
-├── requirements.txt             # 의존성 패키지
+├── requirements.txt             # 의존성 패키지 (선택적)
 ├── utils.py                     # 한글 자모 분해/조합 유틸리티
 ├── conjugator.py                # 메인 활용기 (분기 로직)
+├── sentence_reconstructor.py    # 문장 복원 시스템 (Kiwi 통합)
 ├── data/
 │   └── reu_irregular_stems.txt  # 르불규칙 어간 사전
 ├── rules/                       # 활용 규칙 모듈

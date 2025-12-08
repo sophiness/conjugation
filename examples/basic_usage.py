@@ -90,6 +90,12 @@ def formality_examples():
     print(f"  Casual polite: {conjugate(stem, '아요')}")
     print(f"  Formal: {conjugate(stem, 'ㅂ니다')}")
 
+    stem2 = '먹'
+    print("\n먹다 (to eat):")
+    print(f"  Informal: {conjugate(stem2, '어')}")
+    print(f"  Casual polite: {conjugate(stem2, '어요')}")
+    print(f"  Formal: {conjugate(stem2, 'ㅂ니다')}")
+
 
 def main():
     """Run all examples."""
