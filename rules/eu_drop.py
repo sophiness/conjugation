@@ -13,9 +13,27 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import decompose_str, compose_str, get_vowel, get_final_consonant
+from utils import decompose_str, compose_str, get_vowel, get_final_consonant, decompose, is_hangul
 from rules.vowel_harmony import apply_vowel_harmony
 from rules.contraction import apply_regular_contraction
+
+
+def is_vowel_initial_ending(ending):
+    """Check if ending starts with a vowel."""
+    if not ending:
+        return False
+    first_char = ending[0]
+
+    # Check if it's a vowel jamo
+    if first_char in ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ', 'ㅚ', 'ㅟ', 'ㅢ', 'ㅑ', 'ㅕ', 'ㅛ', 'ㅠ', 'ㅒ', 'ㅖ']:
+        return True
+
+    # Check if it's a Hangul syllable starting with ㅇ (vowel-initial)
+    if is_hangul(first_char):
+        cho, _, _ = decompose(first_char)
+        return cho == 'ㅇ'
+
+    return False
 
 
 def check_eu_drop(stem, ending):
@@ -37,7 +55,7 @@ def check_eu_drop(stem, ending):
         return False
 
     # Check if ending starts with a vowel
-    if not ending or ending[0] not in ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ', 'ㅚ', 'ㅟ', 'ㅢ', '아', '어', '오', '우', '으', '이', '애', '에', '외', '위', '의']:
+    if not is_vowel_initial_ending(ending):
         return False
 
     return True
@@ -66,6 +84,11 @@ def apply_eu_drop(stem, ending):
 
     # Decompose ending
     jamo_ending = decompose_str(harmonized_ending)
+
+    # If ending starts with ㅇ (vowel-initial marker), remove it
+    # because the chosung from stem will combine with the vowel
+    if jamo_ending.startswith('ㅇ'):
+        jamo_ending = jamo_ending[1:]
 
     # Combine
     jamo_combined = jamo_stem + jamo_ending

@@ -124,8 +124,13 @@ def compose_str(jamo_str):
                 # Get jongsung (final consonant) if exists
                 jongsung = ''
                 if i < len(jamo_str) and jamo_str[i] in JONGSUNG_DICT and jamo_str[i] != '':
-                    # Check if next character is not a chosung (to avoid consuming next syllable's chosung)
-                    if i + 1 >= len(jamo_str) or jamo_str[i + 1] not in JUNGSUNG_DICT:
+                    # Look ahead: if next char is a vowel, this consonant is chosung of next syllable
+                    # Otherwise, it's jongsung of current syllable
+                    if i + 1 < len(jamo_str) and jamo_str[i + 1] in JUNGSUNG_DICT:
+                        # This consonant starts the next syllable
+                        pass
+                    else:
+                        # This consonant ends the current syllable
                         jongsung = jamo_str[i]
                         i += 1
 
