@@ -1,0 +1,18 @@
+# 르 irregular verb stems (르불규칙 어간)
+# Format: one stem per line
+# Examples: 흐르다, 따르다, 부르다, etc.
+
+흐르
+따르
+부르
+오르
+내리르
+치르
+고르
+누르
+자르
+거르
+저르
+모르
+이르
+다르
