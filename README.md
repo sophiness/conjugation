@@ -30,8 +30,12 @@ Python으로 구현한 한국어 용언 활용 규칙 시스템입니다. 형태
 
 ## 설치
 
+**외부 의존성 없음!** 이 프로젝트는 순수 Python 표준 라이브러리만 사용합니다.
+
 ```bash
-pip install -r requirements.txt
+# 설치 불필요 - 바로 사용 가능
+git clone <repository-url>
+cd conjugation
 ```
 
 ## 사용법
@@ -134,6 +138,11 @@ conjugation/
 ```
 
 ## 기술 세부사항
+
+### 구현 방식
+- **순수 Python 구현**: 외부 라이브러리 없이 표준 라이브러리만 사용
+- **FST 대신 문자열 처리**: pynini 대신 Python 문자열 조작으로 규칙 구현
+- **모듈화 설계**: 각 규칙을 독립적인 모듈로 분리하여 관리
 
 ### 한글 처리
 - 한글 자모 분해/조합: `utils.py`

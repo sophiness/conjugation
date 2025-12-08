@@ -34,7 +34,9 @@ def check_l_drop(stem, ending):
 
     # Check ending conditions
     # 1. Endings starting with 느: 는, 느라, etc.
-    if ending.startswith('느'):
+    # Check decomposed form starts with ㄴㅡ
+    jamo_ending = decompose_str(ending)
+    if jamo_ending.startswith('ㄴㅡ'):
         return True
 
     # 2. Endings that require epenthetic ㅡ (incomplete consonant endings)
@@ -66,9 +68,10 @@ def apply_l_drop(stem, ending):
     if jamo_stem.endswith('ㄹ'):
         jamo_stem = jamo_stem[:-1]
 
-    # For incomplete consonant endings, add epenthetic ㅡ
+    # For incomplete consonant endings, just append as jongsung
+    # After ㄹ drops, the consonant becomes the jongsung of the previous syllable
     if len(ending) > 0 and ending[0] in ['ㄴ', 'ㅂ', 'ㅅ', 'ㅁ']:
-        jamo_ending = 'ㅡ' + ending
+        jamo_ending = ending  # Just the consonant jamo
     else:
         jamo_ending = decompose_str(ending)
 

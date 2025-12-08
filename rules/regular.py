@@ -9,9 +9,27 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import decompose_str, compose_str, get_final_consonant
+from utils import decompose_str, compose_str, get_final_consonant, decompose, is_hangul
 from rules.vowel_harmony import apply_vowel_harmony
 from rules.contraction import apply_regular_contraction, should_contract
+
+
+def is_vowel_initial_ending(ending):
+    """Check if ending starts with a vowel."""
+    if not ending:
+        return False
+    first_char = ending[0]
+
+    # Check if it's a vowel jamo
+    if first_char in ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ', 'ㅚ', 'ㅟ', 'ㅢ', 'ㅑ', 'ㅕ', 'ㅛ', 'ㅠ', 'ㅒ', 'ㅖ']:
+        return True
+
+    # Check if it's a Hangul syllable starting with ㅇ (vowel-initial)
+    if is_hangul(first_char):
+        cho, _, _ = decompose(first_char)
+        return cho == 'ㅇ'
+
+    return False
 
 
 def apply_regular_conjugation(stem, ending):
@@ -32,26 +50,29 @@ def apply_regular_conjugation(stem, ending):
     # Check if ending starts with incomplete consonant (자소)
     # Incomplete consonant endings: ㄴ, ㅂ, ㅅ, etc.
     if len(ending) == 1 and ending in ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']:
-        # Incomplete consonant ending: just compose together (모아쓰기)
+        # Incomplete consonant ending
         jamo_stem = decompose_str(stem)
-        result = compose_str(jamo_stem + ending)
+        if get_final_consonant(stem):
+            # Has jongsung: need epenthetic ㅡ
+            # Example: 먹 + ㄴ → 먹은 (ㅁㅓㄱ + ㅇㅡㄴ)
+            result = compose_str(jamo_stem + 'ㅇㅡ' + ending)
+        else:
+            # No jongsung: consonant becomes jongsung
+            # Example: 가 + ㄴ → 간 (ㄱㅏ + ㄴ)
+            result = compose_str(jamo_stem + ending)
         return result
 
-    # Check if ending starts with consonant (full syllable)
-    first_char = ending[0]
-    if first_char not in ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ', 'ㅚ', 'ㅟ', 'ㅢ'] and ord(first_char) >= ord('가'):
-        # Consonant ending: check if stem needs epenthetic vowel
-        if get_final_consonant(stem):
-            # Has final consonant: add epenthetic ㅡ
-            jamo_stem = decompose_str(stem)
-            jamo_ending = decompose_str(ending)
-            result = compose_str(jamo_stem + 'ㅡ' + jamo_ending)
-            return result
-        else:
-            # No final consonant: direct concatenation
-            return stem + ending
+    # Check if ending is vowel-initial or consonant-initial
+    if is_vowel_initial_ending(ending):
+        # Vowel ending: apply vowel harmony and contractions
+        harmonized_ending = apply_vowel_harmony(stem, ending)
+    else:
+        # Consonant ending: most consonant endings don't need epenthetic vowel
+        # They are complete syllables that can be directly concatenated
+        # Only special morphological cases would need epenthetic vowel
+        return stem + ending
 
-    # Vowel ending: apply vowel harmony and contractions
+    # Apply vowel harmony and contractions for vowel endings
     harmonized_ending = apply_vowel_harmony(stem, ending)
 
     # Decompose

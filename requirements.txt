@@ -1,2 +1,8 @@
-pynini>=2.1.5
-openfst-python>=1.8.2
+# No external dependencies required!
+# This implementation uses pure Python for Korean verb conjugation.
+# All operations are done with standard library:
+# - Unicode operations for Hangul processing
+# - String manipulation for morphological rules
+
+# Optional: for testing
+# pytest>=7.0.0

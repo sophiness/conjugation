@@ -50,6 +50,7 @@ def apply_regular_contraction(jamo_str):
     - ㅣ + ㅓ → ㅕ
     - ㅜ + ㅓ → ㅝ
     - ㅗ + ㅏ → ㅘ
+    - Same vowel + ㅇ + same vowel → same vowel (e.g., ㅏ + ㅇ + ㅏ → ㅏ)
 
     Exceptions: Stems ending in 기-, 미-, 비-, 띠- do not contract.
     """
@@ -66,13 +67,19 @@ def apply_regular_contraction(jamo_str):
     # Apply contractions
     result = jamo_str
 
-    # ㅣ + ㅓ → ㅕ
+    # Same vowel repetition with ㅇ: V + ㅇ + V → V
+    vowels = ['ㅏ', 'ㅓ', 'ㅗ', 'ㅜ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅔ']
+    for vowel in vowels:
+        result = result.replace(vowel + 'ㅇ' + vowel, vowel)
+
+    # Vowel + ㅇ + vowel contractions (with ㅇ removal)
+    result = result.replace('ㅣㅇㅓ', 'ㅕ')  # ㅣ + ㅇ + ㅓ → ㅕ
+    result = result.replace('ㅜㅇㅓ', 'ㅝ')  # ㅜ + ㅇ + ㅓ → ㅝ
+    result = result.replace('ㅗㅇㅏ', 'ㅘ')  # ㅗ + ㅇ + ㅏ → ㅘ
+
+    # Direct vowel contractions (without ㅇ)
     result = result.replace('ㅣㅓ', 'ㅕ')
-
-    # ㅜ + ㅓ → ㅝ
     result = result.replace('ㅜㅓ', 'ㅝ')
-
-    # ㅗ + ㅏ → ㅘ
     result = result.replace('ㅗㅏ', 'ㅘ')
 
     return result
