@@ -1,0 +1,3 @@
+"""
+Korean verb conjugation rules.
+"""
