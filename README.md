@@ -30,13 +30,17 @@ Python으로 구현한 한국어 용언 활용 규칙 시스템입니다. 형태
 
 ## 설치
 
-**외부 의존성 없음!** 이 프로젝트는 순수 Python 표준 라이브러리만 사용합니다.
-
 ```bash
-# 설치 불필요 - 바로 사용 가능
 git clone <repository-url>
 cd conjugation
+pip install -r requirements.txt
 ```
+
+**의존성:**
+- `pynini`: FST 규칙 구현
+- `kiwipiepy`: 형태소 분석기 (문장 복원용)
+
+**참고**: 의존성 설치 없이도 기본 활용 기능은 사용 가능 (mock 모드)
 
 ## 사용법
 
@@ -112,7 +116,9 @@ conjugation/
 │   └── reu_irregular_stems.txt  # 르불규칙 어간 사전
 ├── rules/                       # 활용 규칙 모듈
 │   ├── __init__.py
-│   ├── vowel_harmony.py         # 모음조화
+│   ├── fst_utils.py             # FST 공통 유틸리티 (pynini)
+│   ├── fst_vowel_harmony.py     # FST 모음조화
+│   ├── vowel_harmony.py         # 모음조화 (Python)
 │   ├── contraction.py           # 축약 규칙
 │   ├── l_drop.py                # ㄹ탈락
 │   ├── eu_drop.py               # 으탈락
@@ -161,9 +167,10 @@ conjugation/
 ## 기술 세부사항
 
 ### 구현 방식
-- **순수 Python 구현**: 외부 라이브러리 없이 표준 라이브러리만 사용
-- **FST 대신 문자열 처리**: pynini 대신 Python 문자열 조작으로 규칙 구현
+- **하이브리드 구조**: Python 분기 처리 + pynini FST 규칙
+- **FST 규칙**: 각 형태소 규칙을 pynini FST로 구현 (점진적 전환 중)
 - **모듈화 설계**: 각 규칙을 독립적인 모듈로 분리하여 관리
+- **어간-어미 경계**: FST는 어간과 어미의 경계에서만 적용
 
 ### 한글 처리
 - 한글 자모 분해/조합: `utils.py`

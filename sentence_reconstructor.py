@@ -20,9 +20,17 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from conjugator import conjugate
 
+# Try to import real Kiwi
+try:
+    from kiwipiepy import Kiwi
+    KIWI_AVAILABLE = True
+except ImportError:
+    KIWI_AVAILABLE = False
+    print("Warning: Kiwi not installed. Using mock data for demonstration.")
+    print("Install with: pip install kiwipiepy")
 
-# Mock Kiwi output for demonstration
-# In real usage, this would come from: from kiwipiepy import Kiwi
+
+# Mock Kiwi output for demonstration when Kiwi is not available
 class MockKiwi:
     """Mock Kiwi for demonstration purposes."""
 
@@ -84,26 +92,23 @@ def is_irregular_tag(tag):
     return None
 
 
-def reconstruct_sentence(text, use_real_kiwi=False):
+def reconstruct_sentence(text, use_real_kiwi=True):
     """
     Reconstruct sentence from morphological analysis.
 
     Args:
         text: Input sentence
-        use_real_kiwi: If True, use real Kiwi (requires installation)
+        use_real_kiwi: If True, use real Kiwi (default: True)
 
     Returns:
         str: Reconstructed sentence without spacing
     """
     # Initialize analyzer
-    if use_real_kiwi:
-        try:
-            from kiwipiepy import Kiwi
-            kiwi = Kiwi()
-        except ImportError:
-            print("Warning: Kiwi not installed, using mock data")
-            kiwi = MockKiwi()
+    if use_real_kiwi and KIWI_AVAILABLE:
+        kiwi = Kiwi()
     else:
+        if not KIWI_AVAILABLE:
+            print("Note: Using mock data. Install Kiwi for real analysis: pip install kiwipiepy")
         kiwi = MockKiwi()
 
     # Analyze sentence
@@ -171,14 +176,18 @@ def demo():
     ]
 
     for sentence in test_sentences:
-        reconstructed = reconstruct_sentence(sentence)
+        # Try real Kiwi first
+        reconstructed = reconstruct_sentence(sentence, use_real_kiwi=True)
         print(f"입력: {sentence}")
         print(f"출력: {reconstructed}")
         print()
 
     print("=" * 70)
-    print("Note: This demo uses mock Kiwi data.")
-    print("Install Kiwi (pip install kiwipiepy) for real morphological analysis.")
+    if not KIWI_AVAILABLE:
+        print("Note: Using mock data. Install Kiwi for real analysis:")
+        print("  pip install kiwipiepy")
+    else:
+        print("Using real Kiwi morphological analyzer")
     print("=" * 70)
 
 
