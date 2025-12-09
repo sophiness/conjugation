@@ -168,9 +168,35 @@ conjugation/
 
 ### 구현 방식
 - **하이브리드 구조**: Python 분기 처리 + pynini FST 규칙
-- **FST 규칙**: 각 형태소 규칙을 pynini FST로 구현 (점진적 전환 중)
+- **FST 규칙**: 각 형태소 규칙을 pynini FST로 구현 (완전 구현 완료)
 - **모듈화 설계**: 각 규칙을 독립적인 모듈로 분리하여 관리
 - **어간-어미 경계**: FST는 어간과 어미의 경계에서만 적용
+
+### FST 구현 모듈
+모든 활용 규칙이 FST로 구현되었습니다:
+
+**기본 규칙 (FST):**
+- `rules/fst_vowel_harmony.py` - 모음조화 FST
+- `rules/fst_l_drop.py` - ㄹ탈락 FST
+- `rules/fst_eu_drop.py` - 으탈락 FST
+- `rules/fst_contraction.py` - 축약 규칙 FST
+- `rules/fst_regular.py` - 규칙 활용 FST
+
+**불규칙 활용 (FST):**
+- `rules/fst_irregular_s.py` - ㅅ불규칙 FST
+- `rules/fst_irregular_d.py` - ㄷ불규칙 FST
+- `rules/fst_irregular_b.py` - ㅂ불규칙 FST
+- `rules/fst_irregular_h.py` - ㅎ불규칙 FST
+- `rules/fst_irregular_reo.py` - 러불규칙 FST
+
+**특수 어간 (FST):**
+- `rules/fst_irregular_u.py` - 우불규칙 FST (푸다)
+- `rules/fst_irregular_yeo.py` - 여불규칙 FST (하다)
+- `rules/fst_irregular_reu.py` - 르불규칙 FST
+
+**Python 버전 (호환성):**
+각 FST 모듈에는 대응하는 Python 버전이 존재합니다 (`rules/*.py` without `fst_` prefix).
+Python 버전은 pynini 설치가 불가능한 환경에서 fallback으로 사용됩니다.
 
 ### 한글 처리
 - 한글 자모 분해/조합: `utils.py`
