@@ -7,6 +7,18 @@ Handles decomposition and composition of Hangul syllables.
 HANGUL_BASE = 0xAC00
 HANGUL_END = 0xD7A3
 
+# 자모 유니코드 범위
+JAMO_CHOSUNG_BASE = 0x1100  # ᄀ
+JAMO_CHOSUNG_END = 0x1112   # ᄒ
+JAMO_JUNGSUNG_BASE = 0x1161 # ᅡ
+JAMO_JUNGSUNG_END = 0x1175  # ᅵ
+JAMO_JONGSUNG_BASE = 0x11A8 # ᆨ
+JAMO_JONGSUNG_END = 0x11C2  # ᇂ
+
+# 호환용 자모 범위 (ㄱ-ㅎ, ㅏ-ㅣ)
+COMPAT_JAMO_BASE = 0x3131
+COMPAT_JAMO_END = 0x318E
+
 # 초성, 중성, 종성 리스트
 CHOSUNG_LIST = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ']
 JUNGSUNG_LIST = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ']
@@ -17,13 +29,30 @@ CHOSUNG_DICT = {char: idx for idx, char in enumerate(CHOSUNG_LIST)}
 JUNGSUNG_DICT = {char: idx for idx, char in enumerate(JUNGSUNG_LIST)}
 JONGSUNG_DICT = {char: idx for idx, char in enumerate(JONGSUNG_LIST)}
 
-
 def is_hangul(char):
     """Check if a character is a Hangul syllable."""
     if not char:
         return False
     code = ord(char)
     return HANGUL_BASE <= code <= HANGUL_END
+
+
+def is_jamo(char):
+    """Check if a character is a compatibility jamo (ㄱ-ㅎ, ㅏ-ㅣ)."""
+    if not char:
+        return False
+    code = ord(char)
+    return COMPAT_JAMO_BASE <= code <= COMPAT_JAMO_END
+
+
+def is_consonant_jamo(char):
+    """Check if a character is a consonant jamo (ㄱ-ㅎ)."""
+    return char in CHOSUNG_LIST or char in JONGSUNG_LIST[1:]  # Exclude empty string
+
+
+def is_vowel_jamo(char):
+    """Check if a character is a vowel jamo (ㅏ-ㅣ)."""
+    return char in JUNGSUNG_LIST
 
 
 def decompose(char):

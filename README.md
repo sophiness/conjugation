@@ -30,17 +30,21 @@ Python으로 구현한 한국어 용언 활용 규칙 시스템입니다. 형태
 
 ## 설치
 
-**외부 의존성 없음!** 이 프로젝트는 순수 Python 표준 라이브러리만 사용합니다.
-
 ```bash
-# 설치 불필요 - 바로 사용 가능
 git clone <repository-url>
 cd conjugation
+pip install -r requirements.txt
 ```
+
+**의존성:**
+- `pynini`: FST 규칙 구현
+- `kiwipiepy`: 형태소 분석기 (문장 복원용)
+
+**참고**: 의존성 설치 없이도 기본 활용 기능은 사용 가능 (mock 모드)
 
 ## 사용법
 
-### 기본 사용
+### 기본 사용 (어간 + 어미)
 
 ```python
 from conjugator import conjugate
@@ -67,7 +71,27 @@ result = conjugate('흐르', '어')  # 흘러 (르불규칙)
 
 # 이다 활용
 result = conjugate('이', '었다', prev_word='나무')  # 였다
+
+# 자음 자모로 시작하는 어미 (모아쓰기 자동 처리)
+result = conjugate('가', 'ㅂ니다')  # 갑니다
+result = conjugate('먹', 'ㅂ니다')  # 먹습니다
+result = conjugate('가', 'ㄹ까요')  # 갈까요
 ```
+
+### 문장 복원 (Kiwi 형태소 분석기 통합)
+
+```python
+from sentence_reconstructor import reconstruct_sentence
+
+# 완전한 문장 입력 → 형태소 분석 → 활용 규칙 적용 → 복원
+result = reconstruct_sentence("나는 밥을 먹었어요")
+print(result)  # 나는밥을먹었어요 (띄어쓰기 없음)
+
+result = reconstruct_sentence("그는 학교에 갑니다")
+print(result)  # 그는학교에갑니다
+```
+
+**참고**: Kiwi 설치 필요 (`pip install kiwipiepy`), 설치 안 되어 있으면 mock 데이터 사용
 
 ### 예제 실행
 
@@ -84,14 +108,17 @@ python tests/test_conjugation.py
 ```
 conjugation/
 ├── README.md                    # 프로젝트 문서
-├── requirements.txt             # 의존성 패키지
+├── requirements.txt             # 의존성 패키지 (선택적)
 ├── utils.py                     # 한글 자모 분해/조합 유틸리티
 ├── conjugator.py                # 메인 활용기 (분기 로직)
+├── sentence_reconstructor.py    # 문장 복원 시스템 (Kiwi 통합)
 ├── data/
 │   └── reu_irregular_stems.txt  # 르불규칙 어간 사전
 ├── rules/                       # 활용 규칙 모듈
 │   ├── __init__.py
-│   ├── vowel_harmony.py         # 모음조화
+│   ├── fst_utils.py             # FST 공통 유틸리티 (pynini)
+│   ├── fst_vowel_harmony.py     # FST 모음조화
+│   ├── vowel_harmony.py         # 모음조화 (Python)
 │   ├── contraction.py           # 축약 규칙
 │   ├── l_drop.py                # ㄹ탈락
 │   ├── eu_drop.py               # 으탈락
@@ -140,9 +167,36 @@ conjugation/
 ## 기술 세부사항
 
 ### 구현 방식
-- **순수 Python 구현**: 외부 라이브러리 없이 표준 라이브러리만 사용
-- **FST 대신 문자열 처리**: pynini 대신 Python 문자열 조작으로 규칙 구현
+- **하이브리드 구조**: Python 분기 처리 + pynini FST 규칙
+- **FST 규칙**: 각 형태소 규칙을 pynini FST로 구현 (완전 구현 완료)
 - **모듈화 설계**: 각 규칙을 독립적인 모듈로 분리하여 관리
+- **어간-어미 경계**: FST는 어간과 어미의 경계에서만 적용
+
+### FST 구현 모듈
+모든 활용 규칙이 FST로 구현되었습니다:
+
+**기본 규칙 (FST):**
+- `rules/fst_vowel_harmony.py` - 모음조화 FST
+- `rules/fst_l_drop.py` - ㄹ탈락 FST
+- `rules/fst_eu_drop.py` - 으탈락 FST
+- `rules/fst_contraction.py` - 축약 규칙 FST
+- `rules/fst_regular.py` - 규칙 활용 FST
+
+**불규칙 활용 (FST):**
+- `rules/fst_irregular_s.py` - ㅅ불규칙 FST
+- `rules/fst_irregular_d.py` - ㄷ불규칙 FST
+- `rules/fst_irregular_b.py` - ㅂ불규칙 FST
+- `rules/fst_irregular_h.py` - ㅎ불규칙 FST
+- `rules/fst_irregular_reo.py` - 러불규칙 FST
+
+**특수 어간 (FST):**
+- `rules/fst_irregular_u.py` - 우불규칙 FST (푸다)
+- `rules/fst_irregular_yeo.py` - 여불규칙 FST (하다)
+- `rules/fst_irregular_reu.py` - 르불규칙 FST
+
+**Python 버전 (호환성):**
+각 FST 모듈에는 대응하는 Python 버전이 존재합니다 (`rules/*.py` without `fst_` prefix).
+Python 버전은 pynini 설치가 불가능한 환경에서 fallback으로 사용됩니다.
 
 ### 한글 처리
 - 한글 자모 분해/조합: `utils.py`
